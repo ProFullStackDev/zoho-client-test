@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <script src="https://js.zohostatic.com/creator/widgets/version/1.0/widgetsdk-min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    
+<style>
+  .btn {
+      background-color: white;
+      border: none;
+      color: black;
+      padding: 12px 16px;
+      font-size: 32px;
+      cursor: pointer;
+
+  }
+ul[role="tree"] {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 120%;
+}
+
+ul[role="tree"] li {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+[role="treeitem"][aria-expanded="false"] + [role="group"] {
+  display: none;
+}
+
+[role="treeitem"][aria-expanded="true"] + [role="group"] {
+  display: block;
+}
+
+[role="treeitem"].doc::before {
+  font-family: "Font Awesome 5 Free";
+  content: "\f15c";
+  display: inline-block;
+  padding-right: 2px;
+  padding-left: 5px;
+  vertical-align: middle;
+}
+
+[role="treeitem"][aria-expanded="false"] > ul {
+  display: none;
+}
+
+[role="treeitem"][aria-expanded="true"] > ul {
+  display: block;
+}
+
+[role="treeitem"][aria-expanded="false"] > span::before {
+  font-family: "Font Awesome 5 Free";
+  content: "\f07b";
+  display: inline-block;
+  padding-right: 3px;
+  vertical-align: middle;
+  font-weight: 900;
+}
+
+[role="treeitem"][aria-expanded="true"] > span::before {
+  font-family: "Font Awesome 5 Free";
+  content: "\f07c";
+  display: inline-block;
+  padding-right: 3px;
+  vertical-align: middle;
+  font-weight: 900;
+}
+
+[role="treeitem"],
+[role="treeitem"] span {
+  width: 9em;
+  margin: 0;
+  padding: 0.125em;
+  display: block;
+}
+
+/* disable default keyboard focus styling for treeitems
+   Keyboard focus is styled with the following CSS */
+[role="treeitem"]:focus {
+  outline: 0;
+}
+
+[role="treeitem"][aria-selected="true"] {
+  padding-left: 4px;
+  border-left: 5px solid #005a9c;
+}
+
+[role="treeitem"].focus,
+[role="treeitem"] span.focus {
+  border-color: black;
+  background-color: #eee;
+}
+
+[role="treeitem"].hover,
+[role="treeitem"] span:hover {
+  padding-left: 4px;
+  background-color: #ddd;
+  border-left: 5px solid #333;
+}
+
+body {
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        .modal {
+            text-align: center;
+            display: none;
+            position: fixed;
+            z-index: 1;
+            padding-top: 100px;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.4);
+        }
+
+        .modalContent {
+            font-size: 20px;
+            font-weight: bold;
+            background-color: #fefefe;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 26%;
+        }
+
+        .close {
+            color: black;
+            float: right;
+            font-size: 40px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: #ff1010;
+            cursor: pointer;
+        }
+
+        .modalContent button {
+            border: none;
+            border-radius: 4px;
+            font-size: 18px;
+            font-weight: bold;
+            padding: 10px;
+        }
+</style>
+<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+	<script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+  </head>
+  <body>
+    
+<h3 id="tree_label"style="font-weight:bold;font-size:50px;padding-left:20px;">
+  X Data
+</h3>
+<div class="tbl_user_data">
+</div>
+<div class="modal">
+</div>
+
+<script>
+  var count = 100000;
+	ZOHO.CREATOR.init()
+        .then(function(data) {
+         	var config = { 
+	    appName : "xmark",
+	    reportName : "XData_Report", 
+		
+	}
+
+	ZOHO.CREATOR.API.getAllRecords(config).then(function(response){
+	console.log(response)
+	ajax_data_new = response["data"];
+	loadData(ajax_data_new);
+	});
+});
+
+function onHit(id,data) {
+  var dTest = $('.tbl_user_data'+id+'').val();
+  console.log(dTest);
+  var lId = id;
+    var lValue = data;
+    console.log(lId);
+    console.log(lValue);
+  		var config = { 
+        appName : "xmark",
+        reportName : "XData_Report", 
+		    criteria: "(Supplier == \""+data+"\")",
+			}
+
+	    ZOHO.CREATOR.API.getAllRecords(config).then(function(response){
+			  //console.log(response)	
+        
+			  var catList = response["data"];
+        lodCategory(catList,lId);
+			  //console.log(catList);
+			  
+		  });  	
+      
+}
+
+
+function lodCategory(jData,id){
+    var categoryList = []; 
+    var tblc = '<ul role="group">';
+    
+  for (let i = 0; i < jData.length; i++) {
+			    var cat = jData[i]["Category"];
+          var brand = jData[i]["Supplier"];
+			    let indexCat = categoryList.indexOf(cat);
+			    if(indexCat < 0) {
+            count = count + 1;
+            cData = count.toString() + "_" + brand;
+            tblc += '<li role="treeitem" aria-expanded="false" aria-selected="false"><span style="font-size:22px;padding-bottom: 10px;"><i id="'+cData+'" onclick="onCatHit(this.id, this.innerHTML);" style="padding-right:10px;" class="fa fa-folder"></i>';
+            tblc += cat + '</span><div class="tbl_user_data'+count+'"></div>';
+            tblc += '</li>';
+				    categoryList.push(cat);
+			    }
+		    }
+        tblc += '</ul>';
+		    console.log(categoryList);
+        console.log(tblc)
+      $('.tbl_user_data'+id+'').html(tblc);
+}
+
+function onCatHit(id,data) {
+  var lId = id;
+  var cId = lId.split("_")[0];
+  var lValue = data;
+    console.log(lId);
+    console.log(lValue);
+    var brand = lId.split("_")[1];
+  		var config = { 
+        appName : "xmark",
+        reportName : "XData_Report", 
+		    criteria: "(Supplier == \""+brand+"\" && Category == \""+data+"\")",
+			}
+
+	    ZOHO.CREATOR.API.getAllRecords(config).then(function(response){
+			  //console.log(response)	
+        
+			  var catList = response["data"];
+        lodSubCategory(catList,cId);
+			  //console.log(catList);
+			  
+		  });  	
+      
+}
+
+function lodSubCategory(jData,id){
+    var subCategoryList = []; 
+    var tblc = '<ul role="group">';
+    //var count = 10000000;
+  for (let i = 0; i < jData.length; i++) {
+			    var cat = jData[i]["SubCategory"];
+          var brand = jData[i]["Supplier"];
+          var category = jData[i]["Category"];
+			    let indexCat = subCategoryList.indexOf(cat);
+          //var count = 10000000;
+			    if(indexCat < 0) {
+            count = count + 1;
+            cData = count.toString() + "_" + brand + "_" + category;
+            tblc += '<li role="treeitem" aria-expanded="false" aria-selected="false"><span style="font-size:20px;padding-bottom: 10px;"><i id="'+cData+'" onclick="onCHit(this.id,this.innerHTML);" style="padding-right:10px;" class="fa fa-folder"></i>';
+            tblc += cat + '</span><div class="tbl_user_data'+cData+'"></div>';
+            tblc += '</li>';
+				    subCategoryList.push(cat);
+			    }
+		    }
+        tblc += '</ul>';
+		    console.log(subCategoryList);
+        console.log(tblc)
+      $('.tbl_user_data'+id+'').html(tblc);
+}
+
+function onCHit(id, data) {
+  var lId = id;
+  var cId = lId.split("_")[0];
+  var lValue = data;
+    console.log(lId);
+    console.log(lValue);
+    var brand = lId.split("_")[1];
+    var category = lId.split("_")[2];
+  		var config = { 
+        appName : "xmark",
+        reportName : "XData_Report", 
+		    criteria: "(Supplier == \""+brand+"\" && Category == \""+category+"\" && SubCategory == \""+data+"\")",
+			}
+
+	    ZOHO.CREATOR.API.getAllRecords(config).then(function(response){
+			  console.log(response)	
+        
+			  var catList = response["data"];
+        lodFile(catList,lId);
+			  //console.log(catList);
+			  
+		  });  	
+      
+}
+
+function lodFile(jData,id){
+    var tblc = '<ul role="group">';
+    //var count = 100000;
+    console.log(jData)
+  for (let i = 0; i < jData.length; i++) {
+			    var cat = jData[i]["File_Name"];
+          var dl = jData[i]["downloadable_link"]["url"];
+          var dlId = jData[i]["ID"];
+            tblc += '<li role="treeitem" aria-expanded="false" aria-selected="false" >';
+            tblc += '<span style="font-size:18px;padding-bottom: 10px;"><i onclick="onWind('+dlId+');" style="padding-right:10px;" class="fa fa-image"></i>'+cat+'</span>';
+            tblc += '</li>';
+		    }
+        tblc += '</ul>';
+        console.log(tblc)
+      $('.tbl_user_data'+id+'').html(tblc);
+}
+
+function onWind(data){
+  var tblc = '<div class="modalContent"><span class="close">×</span><p>Are you sure you want to delete your account</p><button class="accept" onclick="onWin('+data+');">Accept</button><button class="cancel" onclick="hideModal()">Cancel</button></div>';
+  $('.modal').html(tblc);
+}
+
+
+function onWin(data){
+  
+  var config = { 
+        appName : "xmark",
+        reportName : "XData_Report", 
+		    criteria: "(ID == "+data+")",
+			}
+
+	    ZOHO.CREATOR.API.getAllRecords(config).then(function(response){
+			  console.log(response)	
+        
+			  var catList = response["data"];
+        var dl = catList[0]["downloadable_link"]["url"];
+        window.open(dl);
+			  //console.log(catList);
+			  
+		  }); 
+      hideModal()
+}
+
+
+function loadData(jsonData){
+	//console.log(jsonData.length)
+	var tbl = '';
+  tbl += '<ul role="tree" aria-labelledby="tree_label">';
+  
+	var brandList = [];
+ // var count = 0;
+	for (let i = 0; i < jsonData.length; i++) {
+		var brand = jsonData[i]["Supplier"];
+		let indexBrand = brandList.indexOf(brand);
+		if(indexBrand < 0) {
+      count = count + 1;
+      tbl += '<li role="treeitem" aria-expanded="false" aria-selected="false" ><span "style="font-size:25px;padding-left:20px;padding-bottom: 15px;"><i id="'+count+'" onclick="onHit(this.id, this.innerHTML);"style="padding-right:10px;" class="fa fa-folder"></i>';
+      tbl += brand + '</span><div class="tbl_user_data'+count+'" value="abc"></div>';//<ul role="group">';
+  		brandList.push(brand);
+      tbl += '</li>';
+	  }
+	}
+    tbl += '</ul>';
+    console.log(brandList);
+    console.log(tbl);
+    $('.tbl_user_data').html(tbl);
+}
+
+var modal = $.querySelector(".modal");
+    var btn = $.querySelector(".openModal");
+    var span = $.querySelector(".close");
+    btn.addEventListener("click", () => {
+        modal.style.display = "block";
+    });
+    span.addEventListener("click", () => {
+        hideModal();
+    });
+    function hideModal() {
+        modal.style.display = "none";
+    }
+    window.onclick = function (event) {
+        if (event.target == modal) {
+            hideModal();
+        }
+    };
+
+
+</script>
+  </body>
+</html>
